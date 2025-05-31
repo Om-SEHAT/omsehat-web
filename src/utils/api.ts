@@ -3,7 +3,7 @@
  */
 
 // Base API URL - uses environment variable if available, otherwise defaults
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api-omsehat.sportsnow.app';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api-omsehat.app';
 
 // API Endpoints
 export const API_ENDPOINTS = {

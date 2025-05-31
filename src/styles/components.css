@@ -687,15 +687,6 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* About Page Styles */
-.about-section {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
-
 .section-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -712,11 +703,6 @@
 
 .subsection {
   margin-bottom: 2rem;
-}
-
-.about-text {
-  color: var(--gray-600);
-  line-height: 1.7;
 }
 
 .features-grid {

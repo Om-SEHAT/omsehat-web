@@ -50,11 +50,8 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
 
   const searchResults = [
     { title: 'Om Sapa', description: 'Komunikasi dengan tenaga kesehatan', path: '/om-sapa', keywords: ['komunikasi', 'dokter', 'chat'] },
-    { title: 'Om Curhat', description: 'Konsultasi kesehatan online', path: '/om-curhat', keywords: ['konsultasi', 'dokter', 'online', 'chat'] },
     { title: 'Om Bayarin', description: 'Sistem pembayaran terintegrasi', path: '/om-bayarin', keywords: ['bayar', 'pembayaran', 'transaksi', 'ewallet'] },
-    { title: 'Om Edukasi', description: 'Edukasi kesehatan terpercaya', path: '/om-edukasi', keywords: ['edukasi', 'artikel', 'tips', 'kesehatan'] },
     { title: 'Om Pantau', description: 'Monitoring kesehatan berkelanjutan', path: '/om-pantau', keywords: ['monitoring', 'pantau', 'tracking', 'kesehatan'] },
-    { title: 'Tentang Kami', description: 'Informasi tentang Om SEHAT', path: '/about', keywords: ['tentang', 'about', 'info', 'perusahaan'] },
   ];
 
   const filteredResults = searchResults.filter(result =>

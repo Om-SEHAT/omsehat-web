@@ -14,25 +14,7 @@ const Home = () => {
       title: "Om Sapa",
       description: "Komunikasi dengan tenaga kesehatan",
       link: "/om-sapa",
-      position: { x: 200, y: 150 },
-      size: { width: 280, height: 280 }
-    },
-    {
-      id: 3,
-      image: "/feature-3.png",
-      title: "Om Edukasi",
-      description: "Edukasi kesehatan terpercaya",
-      link: "/om-edukasi",
       position: { x: 500, y: 150 },
-      size: { width: 280, height: 280 }
-    },
-    {
-      id: 4,
-      image: "/feature-4.png",
-      title: "Om Curhat",
-      description: "Konsultasi kesehatan online",
-      link: "/om-curhat",
-      position: { x: 800, y: 150 },
       size: { width: 280, height: 280 }
     },
     {
@@ -62,8 +44,7 @@ const Home = () => {
 
   // Handle feature click
   const handleFeatureClick = (feature: typeof features[0], e: React.MouseEvent) => {
-    // Check if it's OmEdukasi or OmPantau
-    if (feature.title === "Om Edukasi" || feature.title === "Om Pantau") {
+    if (feature.title === "Om Pantau") {
       e.preventDefault();
       setSelectedFeature(feature.title);
       setShowModal(true);
@@ -159,22 +140,8 @@ const Home = () => {
             </Link>
           ))}
         </div>
-
-        {/* Call to Action */}
-        <div className="call-to-action">
-          <p className="cta-text">
-            Bergabunglah dengan ribuan pengguna yang telah merasakan kemudahan layanan Om SEHAT
-          </p>
-          <Link 
-            to="/about"
-            className="btn btn-primary cta-button"
-          >
-            Pelajari Lebih Lanjut
-          </Link>
-        </div>
       </div>
-      
-      {/* Confirmation Modal */}
+
       <ConfirmationModal
         isOpen={showModal}
         title={`${selectedFeature} - Konfirmasi Akses`}

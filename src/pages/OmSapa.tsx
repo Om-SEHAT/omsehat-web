@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PatientForm from '../components/PatientForm';
 import Chat from '../components/Chat';
+import '../styles/vital-signs.css';
 import type { PatientFormData } from '../components/PatientForm';
 
 const OmSapaHome = () => {
@@ -70,7 +71,7 @@ const OmSapaHome = () => {
               </div>
             </div>
 
-            <div className="call-to-action">
+            <div className="call-to-action mt-8">
               <button 
                 className="btn btn-primary"
                 onClick={() => setShowForm(true)}
@@ -115,6 +116,7 @@ const OmSapaHome = () => {
   );
 };
 
+// Main OmSapa component with routing
 const OmSapa = () => {
   return (
     <Routes>

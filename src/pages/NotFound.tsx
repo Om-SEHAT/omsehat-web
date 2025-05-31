@@ -26,24 +26,6 @@ const NotFound = () => {
             >
               Om Sapa
             </Link>
-            <Link
-              to="/om-curhat"
-              className="not-found-link"
-            >
-              Om Curhat
-            </Link>
-            <Link
-              to="/om-edukasi"
-              className="not-found-link"
-            >
-              Om Edukasi
-            </Link>
-            <Link
-              to="/about"
-              className="not-found-link"
-            >
-              Tentang Kami
-            </Link>
           </div>
         </div>
 

@@ -19,22 +19,26 @@ Om SEHAT adalah platform kesehatan terintegrasi #1 di Indonesia dengan motto "Om
 - Date of birth input with age calculation
 - OTP verification flow
 - Real-time chat with healthcare professionals
+- IoT integration with ESP32 devices for vital signs monitoring:
+  - Heart rate monitoring via MAX30102 sensor
+  - Blood oxygen saturation (SpO2) via MAX30102 sensor
+  - Body temperature monitoring via MLX90614 sensor
 - Session-based conversation history
 
 ## API Integration
 
 ### Patient Registration
-- Endpoint: `https://api-omsehat.sportsnow.app/user/register`
+- Endpoint: `https://api-omsehat.app/user/register`
 - Method: POST
 - Body: Patient information in JSON format
 
 ### OTP Verification
-- Endpoint: `https://api-omsehat.sportsnow.app/user/login`
+- Endpoint: `https://api-omsehat.app/user/login`
 - Method: POST
 - Body: Registration data with OTP code
 
 ### Chat Session
-- Endpoint: `https://api-omsehat.sportsnow.app/session/{session_id}`
+- Endpoint: `https://api-omsehat.app/session/{session_id}`
 - Method: POST
 - Body: `{"new_message": "message content"}`
 - Response: AI chatbot response with next action instructions
@@ -50,6 +54,7 @@ src/
 │   ├── PatientForm.tsx  # Patient registration form
 │   ├── OTPDialog.tsx    # OTP verification dialog
 │   ├── Chat.tsx         # Chat interface component
+│   ├── VitalSigns.tsx   # Vital signs monitoring component for ESP32
 │   └── ChatMessage.tsx  # Individual chat message component
 ├── pages/               # Page components
 │   ├── Home.tsx         # Landing page
@@ -59,10 +64,13 @@ src/
 │   ├── patient-form.css # Styles for patient form
 │   ├── otp-dialog.css   # Styles for OTP verification
 │   ├── chat.css         # Styles for chat interface
+│   ├── vital-signs.css  # Styles for vital signs monitoring
 │   └── ...              # Other style files
 ├── utils/               # Utility functions
 │   ├── countries.ts     # Country data and helper functions
 │   ├── validation.ts    # Form validation utilities
+│   ├── api.ts           # API configuration and endpoints
+│   ├── mqtt.ts          # MQTT client for ESP32 communication
 │   └── ...              # Other utility functions
 └── contexts/            # React contexts for state management
 ```
@@ -103,6 +111,48 @@ src/
 - Use ShadCN UI components where possible
 - Keep components focused on a single responsibility
 - Use CSS modules for component-specific styling
+
+### Testing the ESP32 Integration
+
+You can test the ESP32 integration in two ways:
+
+1. **With an actual ESP32 device**:
+   - Use the provided Arduino sketch in `docs/esp32_mqtt_client.ino`
+   - Configure the WiFi and MQTT settings
+   - Connect the MAX30102 and MLX90614 sensors
+   - Upload the sketch to your ESP32
+
+2. **Without hardware (simulation)**:
+   - Use MQTT Explorer or similar MQTT client tool
+   - Connect to the same MQTT broker specified in your `.env` file
+   - Manually publish messages to simulate sensor data:
+     ```json
+     // Topic: omsehat/omsapa/max_data
+     {
+       "heartRate": "75",
+       "spo2": "98"
+     }
+     ```
+     ```json
+     // Topic: omsehat/omsapa/mlx_data
+     {
+       "temp": "36.8"
+     }
+     ```
+   - Observe the application UI updating with the simulated values
+
+For more details, see the [MQTT Integration Documentation](docs/mqtt-integration.md).
+
+### MQTT Configuration
+
+For ESP32 sensor integration, the MQTT broker URL can be configured in the `.env` file:
+
+```bash
+# MQTT Configuration
+VITE_MQTT_BROKER_URL=mqtt://broker.emqx.io:1883
+```
+
+Detailed documentation about the MQTT integration can be found in [docs/mqtt-integration.md](docs/mqtt-integration.md).
 
 ### Git Workflow
 1. Create a new branch for each feature or bugfix

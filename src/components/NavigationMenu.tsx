@@ -12,12 +12,8 @@ const NavigationMenu = ({ mode = 'mobile' }: NavigationMenuProps) => {
   const menuItems = [
     { title: "Beranda", path: "/" },
     { title: "Om Sapa", path: "/om-sapa" },
-    { title: "Om Curhat", path: "/om-curhat" },
     { title: "Om Bayarin", path: "/om-bayarin" },
-    { title: "Om Edukasi", path: "/om-edukasi" },
     { title: "Om Pantau", path: "/om-pantau" },
-    { title: "Tentang Kami", path: "/about" },
-    { title: "Demo", path: "/demo" },
   ];
 
   const handleLinkClick = () => {
