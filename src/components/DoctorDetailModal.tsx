@@ -18,14 +18,78 @@ interface DoctorDetailData {
   appointment_count_daily: number;
   appointment_count_all_time: number;
   current_queue?: {
+    id: string;
+    doctor_id: string;
     number: number;
+    session_id: string;
+    session: {
+      id: string;
+      user_id: string;
+      weight: number;
+      height: number;
+      heartrate: number;
+      bodytemp: number;
+      prediagnosis: string;
+      doctor_diagnosis: string;
+      created_at: string;
+      updated_at: string;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        nationality: string;
+        dob: string;
+        gender: string;
+        created_at: string;
+        updated_at: string;
+      };
+    };
+    created_at: string;
+    updated_at: string;
   };
+}
+
+interface PatientData {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    gender: string;
+    nationality: string;
+    age: string;
+  };
+  current_session: {
+    session_id: string;
+    weight: number;
+    height: number;
+    heartrate: number;
+    bodytemp: number;
+    prediagnosis: string;
+    doctor_diagnosis: string;
+    created_at: string;
+  };
+  history_sessions: Array<{
+    session_id: string;
+    weight: number;
+    height: number;
+    heartrate: number;
+    bodytemp: number;
+    prediagnosis: string;
+    doctor_diagnosis: string;
+    created_at: string;
+  }>;
 }
 
 const DoctorDetailModal: React.FC<DoctorDetailProps> = ({ id, isOpen, onClose }) => {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
   const [doctorData, setDoctorData] = React.useState<DoctorDetailData | null>(null);
+  const [patientData, setPatientData] = React.useState<PatientData | null>(null);
+  const [processingQueue, setProcessingQueue] = React.useState<boolean>(false);
+  const [patientLoading, setPatientLoading] = React.useState<boolean>(false);
+  const [patientError, setPatientError] = React.useState<string | null>(null);
+  const [diagnosis, setDiagnosis] = React.useState<string>('');
+  const [savingDiagnosis, setSavingDiagnosis] = React.useState<boolean>(false);
   const modalRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -85,11 +149,85 @@ const DoctorDetailModal: React.FC<DoctorDetailProps> = ({ id, isOpen, onClose })
       const data = await response.json();
       console.log('Doctor data fetched:', data);
       setDoctorData(data);
+      
+      // If there's a current queue with a user, fetch the user data
+      if (data.current_queue?.session?.user_id) {
+        fetchPatientData(data.current_queue.session.user_id);
+      }
     } catch (err) {
       console.error('Error fetching doctor details:', err);
       setError(err instanceof Error ? err.message : 'Gagal memuat data dokter. Silakan coba lagi.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPatientData = async (userId: string) => {
+    try {
+      setPatientLoading(true);
+      setPatientError(null);
+      
+      const response = await fetch(`https://api-omsehat.sportsnow.app/user/${userId}`);
+      
+      if (!response.ok) {
+        const errorCode = response.status;
+        throw new Error(`Gagal memuat data pasien (${errorCode})`);
+      }
+      
+      const data = await response.json();
+      console.log('Patient data fetched:', data);
+      setPatientData(data);
+    } catch (err) {
+      console.error('Error fetching patient data:', err);
+      setPatientError(err instanceof Error ? err.message : 'Gagal memuat data pasien.');
+    } finally {
+      setPatientLoading(false);
+    }
+  };
+
+  const handleProcessQueue = async () => {
+    if (!doctorData?.current_queue) {
+      return;
+    }
+    
+    try {
+      setProcessingQueue(true);
+      
+      // Save diagnosis if available
+      if (diagnosis.trim() && doctorData.current_queue.session_id) {
+        setSavingDiagnosis(true);
+        const diagnosisResponse = await fetch(`https://api-omsehat.sportsnow.app/session/${doctorData.current_queue.session_id}/diagnose`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ diagnosis: diagnosis.trim() }),
+        });
+        
+        if (!diagnosisResponse.ok) {
+          throw new Error('Gagal menyimpan diagnosis');
+        }
+        
+        const diagnosisResult = await diagnosisResponse.json();
+        console.log('Diagnosis saved:', diagnosisResult);
+        setSavingDiagnosis(false);
+      }
+      
+      // Add a small delay to show processing state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // After processing, refetch the doctor data to get the updated queue
+      fetchDoctorDetails();
+      
+      // Reset diagnosis and patient data since we processed the queue
+      setDiagnosis('');
+      setPatientData(null);
+    } catch (err) {
+      console.error('Error processing queue:', err);
+      alert('Gagal memproses antrian. Silakan coba lagi.');
+    } finally {
+      setProcessingQueue(false);
+      setSavingDiagnosis(false);
     }
   };
 
@@ -226,15 +364,122 @@ const DoctorDetailModal: React.FC<DoctorDetailProps> = ({ id, isOpen, onClose })
               </div>
               
               {doctorData.current_queue && (
-                <div className="queue-info">
+                <div className="queue-info mb-4">
                   <div className="queue-label">Nomor Antrian Saat Ini</div>
                   <div className="queue-number animate-pulse-gentle">{doctorData.current_queue.number}</div>
-                  <div className="queue-time-label mt-2 text-xs text-white/80">
-                    Diperbarui terakhir:
+                  <div className="queue-time-label mt-2 text-xs text-gray-600">
+                    Diperbarui terakhir: 
                     <span className="ml-1 font-medium">{new Date().toLocaleTimeString('id-ID', {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}</span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Process Queue button */}
+              {doctorData.current_queue && (
+                <div className="process-queue-container mt-4">
+                  <button 
+                    className="process-queue-button"
+                    onClick={handleProcessQueue}
+                    disabled={processingQueue || savingDiagnosis}
+                  >
+                    {processingQueue || savingDiagnosis ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {savingDiagnosis ? 'Menyimpan diagnosis...' : 'Memproses antrian...'}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        {diagnosis.trim() ? 'Simpan & Proses Antrian' : 'Proses Antrian'}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
+              
+              {/* Patient information section */}
+              {patientData && (
+                <div className="patient-info mt-6 bg-white p-4 rounded-lg border border-blue-200 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    Data Pasien Saat Ini
+                  </h4>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="patient-detail-item">
+                      <div className="text-gray-500">Nama</div>
+                      <div className="font-medium text-gray-800">{patientData.user.name}</div>
+                    </div>
+                    
+                    <div className="patient-detail-item">
+                      <div className="text-gray-500">Gender</div>
+                      <div className="font-medium text-gray-800">{patientData.user.gender}</div>
+                    </div>
+                    
+                    <div className="patient-detail-item">
+                      <div className="text-gray-500">Usia</div>
+                      <div className="font-medium text-gray-800">{patientData.user.age}</div>
+                    </div>
+                    
+                    <div className="patient-detail-item">
+                      <div className="text-gray-500">Nationality</div>
+                      <div className="font-medium text-gray-800">{patientData.user.nationality}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h5 className="text-base font-medium text-gray-700 mb-2">Vital Signs</h5>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="patient-vital-item">
+                        <div className="text-gray-500">Berat Badan</div>
+                        <div className="font-medium text-gray-800">{patientData.current_session.weight} kg</div>
+                      </div>
+                      
+                      <div className="patient-vital-item">
+                        <div className="text-gray-500">Tinggi Badan</div>
+                        <div className="font-medium text-gray-800">{patientData.current_session.height} cm</div>
+                      </div>
+                      
+                      <div className="patient-vital-item">
+                        <div className="text-gray-500">Detak Jantung</div>
+                        <div className="font-medium text-gray-800">{patientData.current_session.heartrate} bpm</div>
+                      </div>
+                      
+                      <div className="patient-vital-item">
+                        <div className="text-gray-500">Suhu Tubuh</div>
+                        <div className="font-medium text-gray-800">{patientData.current_session.bodytemp}°C</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h5 className="text-base font-medium text-gray-700 mb-2">Pre-Diagnosis</h5>
+                    <div className="bg-gray-50 p-3 rounded text-gray-800 text-sm border border-gray-100">
+                      {patientData.current_session.prediagnosis || "Tidak ada pre-diagnosis"}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h5 className="text-base font-medium text-gray-700 mb-2">Diagnosis Dokter</h5>
+                    <div className="diagnosis-input-container">
+                      <textarea
+                        className="diagnosis-input w-full p-3 rounded bg-white text-gray-800 text-sm border border-blue-200"
+                        placeholder="Masukkan diagnosis untuk pasien ini..."
+                        value={diagnosis}
+                        onChange={(e) => setDiagnosis(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
                   </div>
                 </div>
               )}

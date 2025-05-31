@@ -357,6 +357,95 @@
   z-index: 1;
 }
 
+/* Process Queue Button */
+.process-queue-button {
+  width: 100%;
+  padding: 8px 12px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.process-queue-button:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.process-queue-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Patient Info Section */
+.patient-info {
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.patient-info::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  z-index: 0;
+}
+
+.patient-detail-item,
+.patient-vital-item {
+  position: relative;
+  z-index: 1;
+}
+
+.patient-vital-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Diagnosis Input Styles */
+.diagnosis-input-container {
+  position: relative;
+  margin-top: 8px;
+}
+
+.diagnosis-input {
+  width: 100%;
+  resize: vertical;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.diagnosis-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.diagnosis-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Process Queue Container */
+.process-queue-container {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -371,6 +460,15 @@
 @keyframes spinnerRotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s infinite ease-in-out;
 }
 
 /* Media Queries */
