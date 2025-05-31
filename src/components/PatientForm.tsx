@@ -1,10 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { countries, regions, getCountryFlag } from '../utils/countries';
 import OTPDialog from './OTPDialog';
+import SensorReadingDialog from './SensorReadingDialog';
 import { API_ENDPOINTS, getAuthHeaders } from '../utils/api';
+import { useMqtt, MQTT_TOPICS } from '../utils/mqtt';
+import type { MaxSensorData, MlxSensorData } from '../utils/mqtt';
+import '../styles/sensor-dialog.css';
 
 export interface PatientFormData {
   fullName: string;
@@ -39,34 +43,35 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
 
   const [errors, setErrors] = useState<Partial<PatientFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // OTP related states
+
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [isOtpLoading, setIsOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [registrationData, setRegistrationData] = useState<unknown>(null);
   
-  // Navigation hook for redirecting after successful verification
-  const navigate = useNavigate();
+  const [showSensorDialog, setShowSensorDialog] = useState(false);
+  const [activeSensorType, setActiveSensorType] = useState<'heartRate' | 'bodyTemperature' | null>(null);
+  const [sensorError, setSensorError] = useState<string | null>(null);
   
-  // Filter countries removed as it's not being used
+  const navigate = useNavigate();
+  const formContainerRef = useFocusTrap();
+  const mqtt = useMqtt();
+  const heartRateListenerRef = useRef<((data: any) => void) | null>(null);
+  const tempListenerRef = useRef<((data: any) => void) | null>(null);
 
   const resetForm = () => {
     setFormData({
-      fullName: '',
-      email: '',
-      weight: '',
-      height: '',
-      dateOfBirth: '',
-      nationality: '',
-      heartRate: '',
-      bodyTemperature: '',
-      sex: '',
+      fullName: '', email: '', weight: '', height: '',
+      dateOfBirth: '', nationality: '', heartRate: '',
+      bodyTemperature: '', sex: '',
     });
     setErrors({});
     setApiError(null);
-    setApiError(null);
+    setOtpError(null);
+    setShowOtpDialog(false);
+    setShowSensorDialog(false);
+    setSensorError(null);
   };
 
   const validateForm = (): boolean => {
@@ -78,8 +83,7 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Format email tidak valid";
     }
-    
-    // Numeric validations
+
     if (!formData.weight) {
       newErrors.weight = "Berat badan wajib diisi";
     } else if (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0) {
@@ -108,7 +112,7 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
       newErrors.bodyTemperature = "Suhu badan wajib diisi";
     } else if (isNaN(Number(formData.bodyTemperature)) || Number(formData.bodyTemperature) <= 0) {
       newErrors.bodyTemperature = "Suhu badan harus berupa angka positif";
-    } else if (Number(formData.bodyTemperature) < 35 || Number(formData.bodyTemperature) > 42) {
+    } else if (Number(formData.bodyTemperature) < 20 || Number(formData.bodyTemperature) > 50) {
       newErrors.bodyTemperature = "Suhu badan tidak dalam rentang normal";
     }
     
@@ -133,10 +137,7 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -161,21 +162,14 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
           dob: new Date(formData.dateOfBirth).toISOString(),
           otp: null
         };
-        
-        // Store registration data for later use with OTP
         setRegistrationData(formattedData);
-        
-        // Send data to the API
         const response = await fetch(API_ENDPOINTS.USER.REGISTER, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(formattedData)
         });
-        
         const data = await response.json();
-        
         if (!response.ok) {
-          // Handle API error response
           const errorMessage = data.message || `Error: ${response.status} ${response.statusText}`;
           setApiError(errorMessage);
           throw new Error(errorMessage);
@@ -208,12 +202,7 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
     setOtpError(null);
     
     try {
-      // Send OTP verification request
-      const verificationData = {
-        ...registrationData,
-        otp: otp
-      };
-      
+      const verificationData = { ...registrationData as any, otp: otp };
       const response = await fetch(API_ENDPOINTS.USER.VERIFY_OTP, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -247,39 +236,29 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
         
         const chatData = await chatResponse.json();
         console.log('Initial chat message sent:', chatData);
-        
-        // Navigate to chat page with session ID
-        navigate(`/om-sapa/chat/${sessionId}`);
       } catch (chatError) {
         console.error('Failed to initialize chat:', chatError);
-        // Still navigate to chat page even if initial message fails
-        navigate(`/om-sapa/chat/${sessionId}`);
       }
-      
-      // Call the onSubmit prop with the original form data to notify parent components
-      onSubmit(formData);
+      onSubmit(formData); // Notify parentAdd commentMore actions
+      navigate(`/om-sapa/chat/${sessionId}`); // Navigate after onSubmit
     } catch (error) {
       console.error('OTP verification failed:', error);
+      if (!otpError) { // Only set generic if a specific one isn't already set
+        setOtpError('Verifikasi OTP gagal. Silakan coba lagi.');
+      }
     } finally {
       setIsOtpLoading(false);
     }
   };
 
   const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    }
+    if (onCancel) onCancel();
     resetForm();
   };
-  
-  // Focus trap for accessibility
-  const formContainerRef = useFocusTrap();
 
-  // Calculate age when date of birth changes
-  const calculateAge = (dob: string): number | null => {
-    if (!dob) return null;
-    
-    const birthDate = new Date(dob);
+  const calculatedAge = useMemo(() => {
+    if (!formData.dateOfBirth) return null;
+    const birthDate = new Date(formData.dateOfBirth);
     const today = new Date();
     
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -291,12 +270,139 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
     }
     
     return age >= 0 ? age : null;
-  };
-  
-  // Calculate age when date of birth changes
-  const calculatedAge = useMemo(() => {
-    return calculateAge(formData.dateOfBirth);
   }, [formData.dateOfBirth]);
+
+  // --- MQTT Sensor Integration ---
+
+  // Generic function to clean up MQTT listeners and subscriptions for a sensor
+  const cleanupMqttSensor = useCallback(async (sensorTypeToClean: 'heartRate' | 'bodyTemperature') => {
+    if (sensorTypeToClean === 'heartRate') {
+      if (heartRateListenerRef.current) {
+        mqtt.removeListener(MQTT_TOPICS.MAX_DATA, heartRateListenerRef.current);
+        heartRateListenerRef.current = null; // Clear the ref
+      }
+      try {
+        await mqtt.unsubscribe(MQTT_TOPICS.MAX_DATA);
+        console.log('Unsubscribed from MAX_DATA');
+      } catch (e) {
+        console.warn('Already unsubscribed or error unsubscribing from MAX_DATA:', e);
+      }
+    } else if (sensorTypeToClean === 'bodyTemperature') {
+      if (tempListenerRef.current) {
+        mqtt.removeListener(MQTT_TOPICS.MLX_DATA, tempListenerRef.current);
+        tempListenerRef.current = null; // Clear the ref
+      }
+      try {
+        await mqtt.unsubscribe(MQTT_TOPICS.MLX_DATA);
+        console.log('Unsubscribed from MLX_DATA');
+      } catch (e) {
+        console.warn('Already unsubscribed or error unsubscribing from MLX_DATA:', e);
+      }
+    }
+  }, [mqtt]);
+  
+  const handleHeartRateRead = async () => {
+    setActiveSensorType('heartRate');
+    setShowSensorDialog(true);
+    setSensorError(null);
+
+    await cleanupMqttSensor('heartRate'); // Clean up previous attempts
+
+    try {
+      await mqtt.connect();
+      await mqtt.subscribe(MQTT_TOPICS.MAX_DATA);
+      console.log('Subscribed to MAX_DATA');
+
+      const listener = (data: unknown) => {
+        try {
+          const sensorData = data as MaxSensorData;
+          if (sensorData && typeof sensorData.heartRate === 'number') {
+            setFormData(prev => ({ ...prev, heartRate: sensorData.heartRate.toString() }));
+            setShowSensorDialog(false);
+          } else {
+            console.warn('Received malformed heart rate data:', data);
+            setSensorError('Data detak jantung tidak valid dari sensor.');
+            // Keep dialog open to show this error, user can cancel.
+          }
+        } catch (e) {
+          console.error('Error processing heart rate data:', e);
+          setSensorError('Gagal memproses data detak jantung.');
+        } finally {
+          cleanupMqttSensor('heartRate'); // Clean up after processing or error
+        }
+      };
+      heartRateListenerRef.current = listener;
+      mqtt.addListener(MQTT_TOPICS.MAX_DATA, listener);
+      await mqtt.requestSensorData("max");
+    } catch (error) {
+      console.error('Error setting up MQTT for heart rate:', error);
+      setSensorError('Gagal terhubung ke sensor detak jantung. Silakan input manual.');
+      await cleanupMqttSensor('heartRate'); // Cleanup on setup error
+    }
+  };
+
+  const handleBodyTemperatureRead = async () => {
+    setActiveSensorType('bodyTemperature');
+    setShowSensorDialog(true);
+    setSensorError(null);
+
+    await cleanupMqttSensor('bodyTemperature'); // Clean up previous attempts
+
+    try {
+      await mqtt.connect();
+      await mqtt.subscribe(MQTT_TOPICS.MLX_DATA);
+      console.log('Subscribed to MLX_DATA');
+
+      const listener = (data: unknown) => {
+        try {
+          const sensorData = data as MlxSensorData;
+          if (sensorData && typeof sensorData.temp === 'number') {
+            // Store as string for input, but keep float value for backend
+            setFormData(prev => ({
+              ...prev,
+              bodyTemperature: sensorData.temp.toFixed(3) // show 2 decimals in input
+            }));
+            setShowSensorDialog(false);
+          } else {
+            console.warn('Received malformed temperature data:', data);
+            setSensorError('Data suhu tubuh tidak valid dari sensor.');
+          }
+        } catch (e) {
+          console.error('Error processing temperature data:', e);
+          setSensorError('Gagal memproses data suhu tubuh.');
+        } finally {
+          cleanupMqttSensor('bodyTemperature'); // Clean up after processing or error
+        }
+      };
+      tempListenerRef.current = listener;
+      mqtt.addListener(MQTT_TOPICS.MLX_DATA, listener);
+      await mqtt.requestSensorData("mlx");
+    } catch (error) {
+      console.error('Error setting up MQTT for temperature:', error);
+      setSensorError('Gagal terhubung ke sensor suhu. Silakan input manual.');
+      await cleanupMqttSensor('bodyTemperature'); // Cleanup on setup error
+    }
+  };
+
+  const handleSensorCancel = async () => {
+    setShowSensorDialog(false);
+    if (activeSensorType) {
+      await cleanupMqttSensor(activeSensorType);
+    }
+    setActiveSensorType(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (activeSensorType) { // if a sensor reading was active
+         cleanupMqttSensor(activeSensorType);
+      } else { // if no specific sensor was active, try to clean both just in case
+         cleanupMqttSensor('heartRate');
+         cleanupMqttSensor('bodyTemperature');
+      }
+      mqtt.disconnect(); // Disconnect MQTT client
+    };
+  }, [mqtt, cleanupMqttSensor, activeSensorType]); 
 
   return (
     <div className="patient-form-container" ref={formContainerRef}>
@@ -512,21 +618,28 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
             <label htmlFor="heartRate" className="form-label">
               Detak Jantung <span className="required">*</span>
             </label>
-            <div className="input-with-suffix">
-              <input
-                type="number"
-                id="heartRate"
-                name="heartRate"
-                value={formData.heartRate}
-                onChange={handleChange}
-                step="1"
-                min="40"
-                max="200"
-                className={`form-input ${errors.heartRate ? 'input-error' : ''}`}
-                placeholder="75"
-                aria-describedby="heartrate-hint"
-              />
-              <span className="input-suffix">bpm</span>
+            <div className="input-with-controls">
+              <div className="input-with-suffix">
+                <input
+                  type="number"
+                  id="heartRate"
+                  name="heartRate"
+                  value={formData.heartRate}
+                  onChange={handleChange}
+                  step="1"
+                  min="40"
+                  max="200"
+                  className={`form-input ${errors.heartRate ? 'input-error' : ''}`}
+                  placeholder="75"
+                  aria-describedby="heartrate-hint"
+                />
+                <span className="input-suffix">bpm</span>
+              </div>
+              <button type="button" className="sensor-read-button" onClick={handleHeartRateRead} aria-label="Read heart rate from sensor">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12h2l3.6-9 3.6 18 3.6-9 3.6 9h4.8"></path>
+                </svg>
+              </button>
             </div>
             <small className="field-hint">Masukkan rata-rata detak jantung per menit</small>
             {errors.heartRate && <span className="error-message">{errors.heartRate}</span>}
@@ -536,21 +649,29 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
             <label htmlFor="bodyTemperature" className="form-label">
               Suhu Badan <span className="required">*</span>
             </label>
-            <div className="input-with-suffix">
-              <input
-                type="number"
-                id="bodyTemperature"
-                name="bodyTemperature"
-                value={formData.bodyTemperature}
-                onChange={handleChange}
-                step="0.1"
-                min="35"
-                max="42"
-                className={`form-input ${errors.bodyTemperature ? 'input-error' : ''}`}
-                placeholder="37.5"
-                aria-describedby="temperature-hint"
-              />
-              <span className="input-suffix">°C</span>
+            <div className="input-with-controls">
+              <div className="input-with-suffix">
+                <input
+                  type="number"
+                  id="bodyTemperature"
+                  name="bodyTemperature"
+                  value={formData.bodyTemperature}
+                  onChange={handleChange}
+                  step="0.1"
+                  min="35"
+                  max="42"
+                  className={`form-input ${errors.bodyTemperature ? 'input-error' : ''}`}
+                  placeholder="37.5"
+                  aria-describedby="temperature-hint"
+                />
+                <span className="input-suffix">°C</span>
+              </div>
+              <button type="button" className="sensor-read-button" onClick={handleBodyTemperatureRead} aria-label="Read body temperature from sensor">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a4 4 0 1 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                  <circle cx="12" cy="14" r="1"></circle>
+                </svg>
+              </button>
             </div>
             <small className="field-hint">Masukkan suhu badan dalam derajat Celsius</small>
             {errors.bodyTemperature && <span className="error-message">{errors.bodyTemperature}</span>}
@@ -646,6 +767,13 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
         email={formData.email}
         isLoading={isOtpLoading}
         error={otpError}
+      />
+      <SensorReadingDialog
+        isOpen={showSensorDialog}
+        sensorType={activeSensorType}
+        onCancel={handleSensorCancel} // This will now also trigger MQTT cleanup
+        onComplete={() => { /* onComplete from dialog not strictly needed if data is set directly */ }}
+        error={sensorError}
       />
     </div>
   );

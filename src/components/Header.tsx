@@ -40,9 +40,8 @@ const Header = () => {
               />
             </div>
 
-            {/* Hubungi Bantuan Button (Widened) */}
             <button className="btn btn-primary help-btn">
-              Hubungi Bantuan
+              Bantuan
             </button>
           </div>
         </div>

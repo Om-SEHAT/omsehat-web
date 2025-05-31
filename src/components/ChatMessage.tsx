@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import TypingEffect from './TypingEffect';
 
 interface ChatMessageProps {
   message: string;
@@ -7,18 +8,77 @@ interface ChatMessageProps {
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, isUser, timestamp }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [showTypingEffect, setShowTypingEffect] = useState(!isUser);
+  const [typingComplete, setTypingComplete] = useState(isUser);
+  
+  useEffect(() => {
+    // Add a small delay before showing the message for a staggered effect
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+  
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString([], { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const handleTypingComplete = () => {
+    setTypingComplete(true);
+    setShowTypingEffect(false);
+  };
 
   return (
-    <div className={`message ${isUser ? 'user-message' : 'bot-message'}`}>
-      <div className="message-content">
-        {message.split('\n').map((line, index) => (
-          <p key={index}>{line}</p>
-        ))}
+    <div 
+      className={`message ${isUser ? 'user-message' : 'bot-message'} ${isVisible ? 'visible' : ''}`}
+      style={{ opacity: isVisible ? 1 : 0 }}
+    >
+      <div className="message-bubble">
+        <div className="message-content">
+          {isUser ? (
+            // User messages are displayed directly
+            message.split('\n').map((line, index) => (
+              <p key={index}>{line || ' '}</p>
+            ))
+          ) : (
+            // Bot messages show typing effect
+            showTypingEffect ? (
+              <TypingEffect 
+                text={message} 
+                typingSpeed={20} 
+                onComplete={handleTypingComplete}
+              />
+            ) : (
+              // After typing is complete, show the full message
+              message.split('\n').map((line, index) => (
+                <p key={index}>{line || ' '}</p>
+              ))
+            )
+          )}
+        </div>
       </div>
-      <span className="message-time">{formatTime(timestamp)}</span>
+      <div className="message-meta">
+        <span className="message-time" title={formatDate(timestamp)}>
+          {formatTime(timestamp)}
+        </span>
+        {isUser && typingComplete && (
+          <span className="message-status">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+        )}
+      </div>
     </div>
   );
 };

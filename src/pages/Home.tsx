@@ -12,34 +12,21 @@ const Home = () => {
       id: 2,
       image: "/feature-2.png",
       title: "Om Sapa",
-      description: "Komunikasi dengan tenaga kesehatan",
-      link: "/om-sapa",
-      position: { x: 500, y: 150 },
-      size: { width: 280, height: 280 }
-    },
-    {
-      id: 5,
-      image: "/feature-5.png",
-      title: "Om Bayarin",
-      description: "Sistem pembayaran terintegrasi",
-      link: "/om-bayarin",
-      position: { x: 350, y: 400 },
-      size: { width: 280, height: 280 }
+      description: "Berobat dan bertemu tenaga kesehatan dengan mudah",
+      link: "/om-sapa"
     },
     {
       id: 6,
       image: "/feature-6.png",
       title: "Om Pantau",
-      description: "Monitoring kesehatan berkelanjutan",
-      link: "/om-pantau",
-      position: { x: 650, y: 400 },
-      size: { width: 280, height: 280 }
+      description: "Monitoring pasien terintegrasi",
+      link: "/om-pantau"
     }
   ];
 
   // Set document title when component mounts
   useEffect(() => {
-    document.title = "Om SEHAT - Sistem Kesehatan Integrasi #1 di Indonesia";
+    document.title = "Om SEHAT - Hadirkan Kesehatan Cerdas ke Pelosok Indonesia";
   }, []);
 
   // Handle feature click
@@ -72,41 +59,35 @@ const Home = () => {
             Selamat Datang di Om SEHAT
           </h1>
           <p className="page-subtitle">
-            Sistem Kesehatan Integrasi #1 di Indonesia
+            Hadirkan Kesehatan Cerdas ke Pelosok Indonesia
           </p>
           <p className="page-tagline">
             Om Tolong Om! Om Siap Menolong!
           </p>
         </div>
 
-        {/* Features Section - Desktop Layout (matches Figma) */}
+        {/* Features Section - Desktop Layout (Horizontal Cards) */}
         <div className="features-grid-desktop" role="region" aria-label="Fitur Om SEHAT">
           {features.map((feature) => (
             <Link
               key={feature.id}
               to={feature.link}
-              className="feature-item"
+              className="feature-card-horizontal"
               onClick={(e) => handleFeatureClick(feature, e)}
-              style={{
-                left: `${Math.max(0, feature.position.x)}px`,
-                top: `${feature.position.y}px`,
-                width: `${feature.size.width}px`,
-                height: `${feature.size.height}px`,
-              }}
               aria-label={`${feature.title} - ${feature.description}`}
             >
-              <div className="feature-container">
-                <img
-                  src={feature.image}
-                  alt={`Ilustrasi ${feature.title}`}
-                  className="feature-image"
-                  loading="lazy"
-                />
-                <div className="feature-overlay">
-                  <div className="feature-content">
-                    <h3 className="feature-title">{feature.title}</h3>
-                    <p className="feature-description">{feature.description}</p>
-                  </div>
+              <div className="feature-card-container">
+                <div className="feature-card-image-wrapper">
+                  <img
+                    src={feature.image}
+                    alt={`Ilustrasi ${feature.title}`}
+                    className="feature-card-image"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="feature-card-content">
+                  <h3 className="feature-card-title">{feature.title}</h3>
+                  <p className="feature-card-description">{feature.description}</p>
                 </div>
               </div>
             </Link>
@@ -119,22 +100,22 @@ const Home = () => {
             <Link
               key={feature.id}
               to={feature.link}
-              className="feature-link"
+              className="feature-card-horizontal-mobile"
               onClick={(e) => handleFeatureClick(feature, e)}
               aria-label={`${feature.title} - ${feature.description}`}
             >
-              <div className="feature-mobile-container">
-                <img
-                  src={feature.image}
-                  alt={`Ilustrasi ${feature.title}`}
-                  className="feature-image"
-                  loading="lazy"
-                />
-                <div className="feature-overlay">
-                  <div className="feature-content">
-                    <h3 className="feature-title">{feature.title}</h3>
-                    <p className="feature-description">{feature.description}</p>
-                  </div>
+              <div className="feature-card-container-mobile">
+                <div className="feature-card-image-wrapper">
+                  <img
+                    src={feature.image}
+                    alt={`Ilustrasi ${feature.title}`}
+                    className="feature-card-image"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="feature-card-content">
+                  <h3 className="feature-card-title">{feature.title}</h3>
+                  <p className="feature-card-description">{feature.description}</p>
                 </div>
               </div>
             </Link>

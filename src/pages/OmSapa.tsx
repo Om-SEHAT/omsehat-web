@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import PatientForm from '../components/PatientForm';
 import Chat from '../components/Chat';
 import '../styles/vital-signs.css';
+import '../styles/feature-redesign.css';
 import type { PatientFormData } from '../components/PatientForm';
 
 const OmSapaHome = () => {
@@ -20,7 +21,7 @@ const OmSapaHome = () => {
         <div className="feature-page-header">
           <h1 className="feature-page-title">Om Sapa</h1>
           <p className="feature-page-subtitle">
-            Layanan komunikasi langsung dengan tenaga kesehatan profesional
+            Berobat dan bertemu tenaga kesehatan dengan mudah
           </p>
         </div>
 
@@ -28,55 +29,51 @@ const OmSapaHome = () => {
           <>
             <div className="feature-section">
               <h2 className="feature-section-title">Fitur Utama</h2>
-              <div className="feature-items-grid">
-                <div className="feature-item-card">
-                  <div className="feature-item-icon">
-                    <span className="feature-item-icon-text">📞</span>
+              <div className="modern-features-grid">
+                <div className="modern-feature-card">
+                  <div className="modern-feature-header">
+                    <div className="modern-feature-number">1</div>
+                    <h3 className="modern-feature-title">Front-desk Operations</h3>
                   </div>
-                  <div className="feature-item-content">
-                    <h3 className="feature-item-title">Konsultasi Real-time</h3>
-                    <p className="feature-item-description">Berkomunikasi langsung dengan dokter dan tenaga medis</p>
-                  </div>
-                </div>
-
-                <div className="feature-item-card">
-                  <div className="feature-item-icon">
-                    <span className="feature-item-icon-text">💬</span>
-                  </div>
-                  <div className="feature-item-content">
-                    <h3 className="feature-item-title">Chat Interaktif</h3>
-                    <p className="feature-item-description">Fitur chat dengan respons cepat dari tenaga kesehatan</p>
+                  <div className="modern-feature-content">
+                    <p className="modern-feature-description">
+                      Pendaftaran digital dengan komputer dan sensor IoT untuk proses check-in yang cepat dan efisien.
+                    </p>
                   </div>
                 </div>
 
-                <div className="feature-item-card">
-                  <div className="feature-item-icon">
-                    <span className="feature-item-icon-text">🔒</span>
+                <div className="modern-feature-card">
+                  <div className="modern-feature-header">
+                    <div className="modern-feature-number">2</div>
+                    <h3 className="modern-feature-title">Streamline AI Diagnosis</h3>
                   </div>
-                  <div className="feature-item-content">
-                    <h3 className="feature-item-title">Privasi Terjamin</h3>
-                    <p className="feature-item-description">Data dan komunikasi Anda aman dengan enkripsi end-to-end</p>
+                  <div className="modern-feature-content">
+                    <p className="modern-feature-description">
+                      Chatbot AI menganalisis gejala dan data kesehatan untuk membantu diagnosis awal yang akurat.
+                    </p>
                   </div>
                 </div>
 
-                <div className="feature-item-card">
-                  <div className="feature-item-icon">
-                    <span className="feature-item-icon-text">⏰</span>
+                <div className="modern-feature-card">
+                  <div className="modern-feature-header">
+                    <div className="modern-feature-number">3</div>
+                    <h3 className="modern-feature-title">Specialist Assignment</h3>
                   </div>
-                  <div className="feature-item-content">
-                    <h3 className="feature-item-title">24/7 Available</h3>
-                    <p className="feature-item-description">Layanan tersedia kapan saja sesuai kebutuhan Anda</p>
+                  <div className="modern-feature-content">
+                    <p className="modern-feature-description">
+                      Merujuk secara otomatis ke dokter yang tepat beserta informasi antrean dan kamar untuk pengalaman perawatan yang lebih baik.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="call-to-action mt-8">
+            <div className="modern-cta">
               <button 
-                className="btn btn-primary"
+                className="modern-cta-button pulse-animation"
                 onClick={() => setShowForm(true)}
               >
-                Mulai Konsultasi
+                Mulai Konsultasi Sekarang
               </button>
             </div>
           </>

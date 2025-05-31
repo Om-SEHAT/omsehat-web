@@ -15,9 +15,7 @@ const Footer = () => {
               />
             </Link>
             <p className="footer-description">
-              Sistem Kesehatan Integrasi #1 di Indonesia.<br />
-              Om Tolong Om!<br />
-              Om Siap Menolong!
+              Hadirkan Kesehatan Cerdas ke Pelosok Indonesia.<br />
             </p>
           </div>
 
@@ -28,7 +26,6 @@ const Footer = () => {
               <h3 id="footer-pasien-heading">Pasien</h3>
               <nav className="footer-nav" aria-labelledby="footer-pasien-heading">
                 <Link to="/om-sapa" className="footer-link">Om Sapa</Link>
-                <Link to="/om-bayarin" className="footer-link">Om Bayarin</Link>
               </nav>
             </div>
 
@@ -37,7 +34,6 @@ const Footer = () => {
               <h3 id="footer-instansi-heading">Instansi</h3>
               <nav className="footer-nav" aria-labelledby="footer-instansi-heading">
                 <Link to="/om-sapa" className="footer-link">Om Sapa</Link>
-                <Link to="/om-bayarin" className="footer-link">Om Bayarin</Link>
                 <Link to="/om-pantau" className="footer-link">Om Pantau</Link>
               </nav>
             </div>

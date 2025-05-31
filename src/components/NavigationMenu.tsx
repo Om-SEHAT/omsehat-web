@@ -12,7 +12,6 @@ const NavigationMenu = ({ mode = 'mobile' }: NavigationMenuProps) => {
   const menuItems = [
     { title: "Beranda", path: "/" },
     { title: "Om Sapa", path: "/om-sapa" },
-    { title: "Om Bayarin", path: "/om-bayarin" },
     { title: "Om Pantau", path: "/om-pantau" },
   ];
 

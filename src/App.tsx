@@ -9,7 +9,6 @@ import SkipLink from '@/components/SkipLink'
 import NotificationContainer from '@/components/NotificationSystem'
 import Home from '@/pages/Home'
 import OmSapa from '@/pages/OmSapa'
-import OmBayarin from '@/pages/OmBayarin'
 import OmPantau from '@/pages/OmPantau'
 import NotFound from '@/pages/NotFound'
 import { useNotifications } from './hooks/useNotifications'
@@ -35,7 +34,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/om-sapa/*" element={<OmSapa />} />
-            <Route path="/om-bayarin" element={<OmBayarin />} />
             <Route path="/om-pantau" element={<OmPantau />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

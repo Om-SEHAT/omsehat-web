@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChatMessage from './ChatMessage';
-import '../styles/chat.css';
+import '../styles/chat-enhanced-v2.css'; // Updated to use the new enhanced styles
 import { API_ENDPOINTS, getAuthHeaders } from '../utils/api';
 
 interface Message {
@@ -17,12 +17,64 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [placeholder, setPlaceholder] = useState('Ketik pesan Anda... (Ctrl+Enter untuk mengirim)');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollToBottom();
   }, [messages]);
+  
+  // Focus textarea when component mounts
+  useEffect(() => {
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 500);
+  }, []);
+  
+  // Handle scroll position in messages container
+  useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
+    if (!messagesContainer) return;
+    
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollButton(!isNearBottom);
+    };
+    
+    messagesContainer.addEventListener('scroll', handleScroll);
+    return () => messagesContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  // Create placeholders that change periodically
+  useEffect(() => {
+    const placeholders = [
+      'Ketik pesan Anda... (Ctrl+Enter untuk mengirim)',
+      'Tanyakan tentang gejala Anda...',
+      'Bagaimana perasaan Anda hari ini?',
+      'Ada pertanyaan kesehatan?'
+    ];
+    
+    let index = 0;
+    const interval = setInterval(() => {
+      index = (index + 1) % placeholders.length;
+      setPlaceholder(placeholders[index]);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   // Initialize chat with welcome message when component mounts
   useEffect(() => {
@@ -58,7 +110,7 @@ const Chat = () => {
           // Fallback welcome message
           const welcomeMessage: Message = {
             id: Date.now().toString(),
-            text: "Halo! Selamat datang di Om SAPA. Silakan pilih bahasa yang Anda inginkan:\na. Bahasa Indonesia\nb. English",
+            text: "Halo! Selamat datang di Om Sapa. Silakan pilih bahasa yang Anda inginkan:\na. Bahasa Indonesia\nb. English",
             sender: 'bot',
             timestamp: new Date()
           };
@@ -96,6 +148,11 @@ const Chat = () => {
     setNewMessage('');
     setIsLoading(true);
     
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+    
     try {
       // Send message to API
       const response = await fetch(API_ENDPOINTS.SESSION.UPDATE(sessionId), {
@@ -110,16 +167,22 @@ const Chat = () => {
       
       const data = await response.json();
       
-      // Add bot response to chat
+      // Add bot response to chat with slight delay for better UX
       if (data.reply) {
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: data.reply,
-          sender: 'bot',
-          timestamp: new Date()
-        };
+        // Show typing indicator
+        setIsTyping(true);
         
-        setMessages(prevMessages => [...prevMessages, botMessage]);
+        setTimeout(() => {
+          const botMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: data.reply,
+            sender: 'bot',
+            timestamp: new Date()
+          };
+          
+          setMessages(prevMessages => [...prevMessages, botMessage]);
+          setIsTyping(false);
+        }, 1000); // Delay response for more natural conversation feel
       }
       
       // Handle special next_action if needed
@@ -144,8 +207,16 @@ const Chat = () => {
     }
   };
   
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  // Handle textarea input and auto-resize
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+  
+  // Handle key presses in textarea
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -155,10 +226,10 @@ const Chat = () => {
     <div className="chat-container">
       <div className="chat-header">
         <h2>Om SAPA</h2>
-        <p>AI Asisten Kesehatan</p>
+        <p>AI Asisten Kesehatan Profesional</p>
       </div>
       
-      <div className="messages-container">
+      <div className="messages-container" ref={messagesContainerRef}>
         {messages.map(message => (
           <ChatMessage
             key={message.id}
@@ -167,31 +238,50 @@ const Chat = () => {
             timestamp={message.timestamp}
           />
         ))}
-        {isLoading && (
+        {(isLoading || isTyping) && (
           <div className="message bot-message">
-            <div className="message-content typing-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
+            <div className="message-bubble">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
+        
+        {showScrollButton && (
+          <button 
+            className="scroll-to-bottom" 
+            onClick={scrollToBottom}
+            aria-label="Scroll to bottom"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        )}
       </div>
       
       <div className="message-input-container">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={e => setNewMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ketik pesan Anda..."
-          disabled={isLoading}
-        />
+        <div className="message-textarea-wrapper">
+          <textarea
+            ref={textareaRef}
+            className="message-textarea"
+            value={newMessage}
+            onChange={handleTextareaChange}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            disabled={isLoading}
+            rows={1}
+          />
+        </div>
         <button 
           className="send-button" 
           onClick={handleSendMessage}
           disabled={!newMessage.trim() || isLoading}
+          title="Kirim pesan"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
