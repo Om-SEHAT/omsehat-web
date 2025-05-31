@@ -17,8 +17,6 @@ const SensorReadingDialog: React.FC<SensorReadingDialogProps> = ({
   isOpen,
   sensorType,
   onCancel,
-  // onComplete is kept for now, though PatientForm doesn't rely on it for the sensor value
-  onComplete,
   error,
 }) => {
   const [timeLeft, setTimeLeft] = useState<number>(60); // 60 seconds timeout
