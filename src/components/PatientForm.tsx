@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import useFocusTrap from '../hooks/useFocusTrap';
 import { countries, regions, getCountryFlag } from '../utils/countries';
 import OTPDialog from './OTPDialog';
+import { API_ENDPOINTS, getAuthHeaders } from '../utils/api';
 
 export interface PatientFormData {
   fullName: string;
@@ -165,11 +166,9 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
         setRegistrationData(formattedData);
         
         // Send data to the API
-        const response = await fetch('https://apidev-triana.sportsnow.app/register', {
+        const response = await fetch(API_ENDPOINTS.USER.REGISTER, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(formattedData)
         });
         
@@ -215,11 +214,9 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
         otp: otp
       };
       
-      const response = await fetch('https://apidev-triana.sportsnow.app/verify-otp', {
+      const response = await fetch(API_ENDPOINTS.USER.VERIFY_OTP, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(verificationData)
       });
       
@@ -242,11 +239,9 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
       
       // Send initial chat message
       try {
-        const chatResponse = await fetch(`https://apidev-triana.sportsnow.app/session/${sessionId}`, {
+        const chatResponse = await fetch(API_ENDPOINTS.SESSION.UPDATE(sessionId), {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ new_message: "Hello!" })
         });
         

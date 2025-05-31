@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../styles/userprofile-animations.css';
 
 interface LeaderboardUser {
   id: string;
@@ -19,15 +20,15 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
   title = "Leaderboard" 
 }) => {
   return (
-    <div className="bg-white rounded-xl shadow-xl p-6 om-card relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600"></div>
+    <div className="bg-white rounded-xl shadow-xl p-6 om-card relative overflow-hidden transform transition-all duration-500 hover:shadow-2xl">
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 animate-gradient-x"></div>
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-semibold text-gray-800 flex items-center relative">
           <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-1.5 h-6 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full shadow-glow-yellow"></div>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg text-white mr-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg text-white mr-3 transform transition-transform hover:scale-110 hover:rotate-6 duration-300">
             <span className="text-xl">🏆</span>
           </div>
-          <span className="bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">{title}</span>
+          <span className="bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent animate-gradient-x">{title}</span>
         </h2>
         <button className="text-[#228BE6] hover:text-[#1c7ed6] text-sm font-medium transition-colors flex items-center group">
           <span className="relative group-hover:underline">Lihat Semua</span>
@@ -41,9 +42,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
         {users.map((user) => (
           <div 
             key={user.id}
-            className={`leaderboard-item flex items-center p-4 rounded-xl border ${
+            className={`leaderboard-item flex items-center p-4 rounded-xl border transform transition-all duration-300 hover:-translate-x-1 hover:shadow ${
               user.isCurrentUser 
-                ? 'bg-blue-50 border-blue-200' 
+                ? 'bg-gradient-to-r from-blue-50 to-white border-blue-200' 
                 : 'bg-white border-gray-200 hover:bg-gray-50'
             } ${user.rank === 1 ? 'leaderboard-rank-1' : ''} 
                ${user.rank === 2 ? 'leaderboard-rank-2' : ''} 
@@ -51,38 +52,38 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
           >
             <div className="w-10 h-10 flex items-center justify-center font-bold text-gray-700">
               {user.rank === 1 && (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center shadow-md text-xl animate-pulse-subtle">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center shadow-md text-xl animate-pulse">
                   🥇
                 </div>
               )}
               {user.rank === 2 && (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md text-xl">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md text-xl transform transition-transform hover:scale-110 hover:rotate-6 duration-300">
                   🥈
                 </div>
               )}
               {user.rank === 3 && (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center shadow-md text-xl">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center shadow-md text-xl transform transition-transform hover:scale-110 hover:rotate-6 duration-300">
                   🥉
                 </div>
               )}
               {user.rank > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-md text-sm font-bold text-gray-700">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center shadow-md text-sm font-bold text-gray-700 transform transition-transform hover:scale-110 duration-300">
                   {user.rank}
                 </div>
               )}
             </div>
             
-            <div className="ml-4 flex-shrink-0">
-              <div className={`w-12 h-12 rounded-full overflow-hidden shadow-md border-2 ${
-                user.rank === 1 ? 'border-yellow-400' :
-                user.rank === 2 ? 'border-gray-300' :
-                user.rank === 3 ? 'border-yellow-700' :
-                user.isCurrentUser ? 'border-blue-400' : 'border-gray-200'
+            <div className="ml-4 flex-shrink-0 group">
+              <div className={`w-12 h-12 rounded-full overflow-hidden shadow-md border-2 transform transition-all duration-300 group-hover:scale-105 ${
+                user.rank === 1 ? 'border-yellow-400 group-hover:border-yellow-500' :
+                user.rank === 2 ? 'border-gray-300 group-hover:border-gray-400' :
+                user.rank === 3 ? 'border-yellow-700 group-hover:border-yellow-800' :
+                user.isCurrentUser ? 'border-blue-400 group-hover:border-blue-500' : 'border-gray-200 group-hover:border-gray-300'
               }`}>
                 <img 
                   src={user.avatar || 'https://via.placeholder.com/40'} 
                   alt={`${user.name}'s avatar`}
-                  className="w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
                 />
               </div>
             </div>
@@ -101,42 +102,46 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                   </span>
                 )}
               </p>
-              <div className="w-full h-1 rounded-full bg-gray-100 mt-1">
-                <div 
-                  className={`h-full rounded-full ${
-                    user.rank === 1 ? 'bg-gradient-to-r from-yellow-500 to-yellow-300' :
-                    user.rank === 2 ? 'bg-gradient-to-r from-gray-400 to-gray-300' :
-                    user.rank === 3 ? 'bg-gradient-to-r from-yellow-700 to-yellow-600' :
-                    'bg-gradient-to-r from-blue-500 to-blue-300'
-                  }`}
-                  style={{ width: `${(user.points / users[0].points) * 100}%` }}
-                ></div>
+              <div className="flex items-center mt-1">
+                <div className="flex-1 max-w-[120px]">
+                  <div className="h-1.5 rounded-full bg-gray-100">
+                    <div 
+                      className={`h-full rounded-full ${
+                        user.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                        user.rank === 2 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
+                        user.rank === 3 ? 'bg-gradient-to-r from-yellow-700 to-yellow-800' :
+                        user.isCurrentUser ? 'bg-gradient-to-r from-blue-400 to-blue-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                      }`}
+                      style={{ width: `${(user.points / users[0].points) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <p className="ml-3 text-sm font-bold text-gray-700">
+                  <span className={
+                    user.rank === 1 ? 'text-yellow-600' :
+                    user.rank === 2 ? 'text-gray-600' :
+                    user.rank === 3 ? 'text-yellow-800' :
+                    user.isCurrentUser ? 'text-blue-600' : 'text-gray-600'
+                  }>{user.points.toLocaleString()}</span> points
+                </p>
               </div>
             </div>
             
-            <div className="flex items-center">
-              <span className={`badge py-2 px-4 flex items-center shadow-md ${
-                user.rank === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white' :
-                user.rank === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800' :
-                user.rank === 3 ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 text-white' :
-                'bg-white text-gray-700'
-              }`}>
-                <span className={`mr-1.5 ${user.rank <= 3 ? 'text-white' : 'text-yellow-500'}`}>⭐</span>
-                <span className={`font-bold ${user.rank <= 3 && user.rank !== 2 ? 'text-white' : 'text-gray-700'}`}>
-                  {user.points.toLocaleString()}
-                </span>
-              </span>
-            </div>
+            <button className="ml-2 text-gray-400 hover:text-gray-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+              </svg>
+            </button>
           </div>
         ))}
       </div>
       
       <div className="mt-6 text-center">
-        <button className="om-button py-2 px-6 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px] flex items-center mx-auto">
-          <span className="mr-2">Lihat Ranking Saya</span>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#228BE6] bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
           </svg>
+          Tampilkan Lebih Banyak
         </button>
       </div>
     </div>

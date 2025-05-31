@@ -24,17 +24,17 @@ Om SEHAT adalah platform kesehatan terintegrasi #1 di Indonesia dengan motto "Om
 ## API Integration
 
 ### Patient Registration
-- Endpoint: `https://apidev-triana.sportsnow.app/register`
+- Endpoint: `https://api-omsehat.sportsnow.app/user/register`
 - Method: POST
 - Body: Patient information in JSON format
 
 ### OTP Verification
-- Endpoint: `https://apidev-triana.sportsnow.app/verify-otp`
+- Endpoint: `https://api-omsehat.sportsnow.app/user/login`
 - Method: POST
 - Body: Registration data with OTP code
 
 ### Chat Session
-- Endpoint: `https://apidev-triana.sportsnow.app/session/{session_id}`
+- Endpoint: `https://api-omsehat.sportsnow.app/session/{session_id}`
 - Method: POST
 - Body: `{"new_message": "message content"}`
 - Response: AI chatbot response with next action instructions

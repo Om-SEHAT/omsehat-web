@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChatMessage from './ChatMessage';
 import '../styles/chat.css';
+import { API_ENDPOINTS, getAuthHeaders } from '../utils/api';
 
 interface Message {
   id: string;
@@ -33,11 +34,9 @@ const Chat = () => {
     // Fetch initial message or use a default welcome
     setIsLoading(true);
     
-    fetch(`https://apidev-triana.sportsnow.app/session/${sessionId}`, {
+    fetch(API_ENDPOINTS.SESSION.GET(sessionId), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers: getAuthHeaders()
     })
       .then(response => {
         if (!response.ok) {
@@ -99,11 +98,9 @@ const Chat = () => {
     
     try {
       // Send message to API
-      const response = await fetch(`https://apidev-triana.sportsnow.app/session/${sessionId}`, {
+      const response = await fetch(API_ENDPOINTS.SESSION.UPDATE(sessionId), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ new_message: newMessage })
       });
       
