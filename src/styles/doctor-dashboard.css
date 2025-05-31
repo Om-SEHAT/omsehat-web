@@ -28,6 +28,17 @@
            transform perspective-1000 hover:-translate-y-2 hover:rotate-[0.5deg];
   }
 
+  .doctor-card-simple {
+    @apply relative overflow-hidden rounded-lg transition-all duration-300
+           bg-white border border-gray-100 hover:border-blue-200
+           shadow-sm hover:shadow-md
+           transform hover:-translate-y-1;
+  }
+
+  .doctor-card-simple:hover {
+    @apply bg-gradient-to-r from-white to-blue-50/50;
+  }
+
   .doctor-card::before {
     content: '';
     @apply absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/5 to-purple-500/5
@@ -85,13 +96,9 @@
   }
 
   .detail-button {
-    @apply relative overflow-hidden px-4 py-2.5 rounded-xl font-medium text-sm
-           text-white transition-all duration-500 transform
-           bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600
-           hover:from-blue-600 hover:via-indigo-700 hover:to-purple-700
-           shadow-[0_2px_8px_rgba(59,130,246,0.15)]
-           hover:shadow-[0_4px_12px_rgba(59,130,246,0.3)]
-           group-hover:scale-105 active:scale-95;
+    @apply flex items-center justify-center px-3 py-1.5 text-sm
+           text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100
+           rounded-md transition-all duration-300 relative overflow-hidden;
   }
 
   .detail-button::before {
@@ -126,6 +133,14 @@
     @apply h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-600
            transition-all duration-300 group-hover:h-2.5
            bg-[length:200%_auto] animate-gradient;
+  }
+
+  /* Simplified refresh button */
+  .refresh-button-simple {
+    @apply px-4 py-2 bg-blue-500 text-white rounded-lg
+           hover:bg-blue-600 focus:ring-4 focus:ring-blue-200
+           transition-colors duration-300 
+           disabled:bg-blue-300 disabled:cursor-not-allowed;
   }
 }
 

@@ -270,80 +270,30 @@ const DoctorCard = ({ doctor }: { doctor: Doctor }) => {
 
   return (
     <>
-      <div 
-        className="doctor-card group"
-      >
-        <div className="card-decoration card-decoration-1"></div>
-        <div className="card-decoration card-decoration-2"></div>
-        <div className="card-top-gradient"></div>
+      <div className="doctor-card-simple group">
+        <div className="flex items-center justify-between p-4">
+          <h3 className="text-lg font-medium text-gray-800">
+            {doctor.name}
+            {isModalOpen && <span className="active-badge ml-2">Active</span>}
+          </h3>
 
-        <div className="p-6 relative">
-          <div className="flex items-center space-x-5">
-            <div className="doctor-avatar">
-              {doctor.avatar ? (
-                <img 
-                  src={doctor.avatar} 
-                  alt={doctor.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center relative z-20">
-                  <span className="text-2xl font-bold text-white drop-shadow-lg">
-                    {doctor.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10"></div>
-            </div>
-
-            <div className="doctor-info">
-              <h3 className="doctor-name">
-                {doctor.name}
-                {isModalOpen && <span className="active-badge">Active</span>}
-              </h3>
-              <div className="flex items-center mt-2">
-                <span className="doctor-specialty-badge">
-                  <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" 
-                       stroke="currentColor" strokeWidth="2">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                  </svg>
-                  {doctor.specialty}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center justify-between border-t border-gray-100/50 pt-4">
-            <div className="room-info">
-              <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" 
-                   stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M3 9h18"/>
-                <path d="M9 21V9"/>
+          <button
+            onClick={openModal}
+            className="detail-button"
+            aria-label={`Lihat detail dokter ${doctor.name}`}
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <svg 
+                className={`w-4 h-4 ${isModalOpen ? 'animate-pulse' : 'group-hover:rotate-180 transition-transform duration-500'}`}
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
               </svg>
-              <span className="room-number">Ruang {doctor.roomno}</span>
-            </div>
-
-            <button
-              onClick={openModal}
-              className="detail-button"
-              aria-label={`Lihat detail dokter ${doctor.name}`}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                <svg 
-                  className={`w-4 h-4 ${isModalOpen ? 'animate-pulse' : 'group-hover:rotate-180 transition-transform duration-500'}`}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 16v-4"/>
-                  <path d="M12 8h.01"/>
-                </svg>
-                <span>{isModalOpen ? 'Terbuka' : 'Lihat Detail'}</span>
-              </span>
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/25 to-white/0 
-                            -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </button>
-          </div>
+              <span>{isModalOpen ? 'Terbuka' : 'Lihat Detail'}</span>
+            </span>
+          </button>
         </div>
       </div>
 
@@ -360,7 +310,6 @@ const DoctorDashboard = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const fetchDoctors = async () => {
@@ -407,165 +356,59 @@ const DoctorDashboard = () => {
     fetchDoctors();
   };
 
-  // Ensure doctors is an array before filtering
-  const filteredDoctors = Array.isArray(doctors) 
-    ? doctors.filter(doctor => {
-        // Ensure doctor properties exist and are strings before using toLowerCase
-        const name = typeof doctor?.name === 'string' ? doctor.name.toLowerCase() : '';
-        const specialty = typeof doctor?.specialty === 'string' ? doctor.specialty.toLowerCase() : '';
-        const roomno = typeof doctor?.roomno === 'string' ? doctor.roomno.toLowerCase() : '';
-        const term = searchTerm.toLowerCase();
-        
-        return name.includes(term) || specialty.includes(term) || roomno.includes(term);
-      })
-    : [];
-
   return (
     <div className="doctor-dashboard">
-      <header className="max-w-7xl mx-auto mb-12 text-center">
+      <header className="max-w-7xl mx-auto mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
-                       from-blue-600 via-blue-500 to-indigo-600 mb-6 animate-gradient">
+                       from-blue-600 via-blue-500 to-indigo-600 mb-4 animate-gradient">
           Daftar Dokter
         </h1>
-        
-        <div className="search-container">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500 
-                          rounded-2xl blur-md opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-          <input
-            type="text"
-            placeholder="Cari nama dokter, spesialisasi, atau nomor ruangan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-400">
-            <svg
-              className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </div>
-        </div>
       </header>
 
       <main className="max-w-7xl mx-auto">
         {loading ? (
-          <div className="flex justify-center items-center min-h-[300px]">
+          <div className="flex justify-center items-center min-h-[200px]">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
           </div>
         ) : error ? (
           <div className="bg-red-50 rounded-xl p-6 text-center max-w-lg mx-auto">
-            <svg
-              className="mx-auto h-12 w-12 text-red-400 mb-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error</h3>
             <p className="text-gray-600">{error}</p>
             <button
               onClick={handleRefresh}
               className="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 
                        transition-colors duration-300 inline-flex items-center gap-2"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 2v6h-6" />
-                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                <path d="M3 22v-6h6" />
-                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-              </svg>
               Coba Lagi
             </button>
           </div>
         ) : (
           <>
-            {/* Doctor grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {filteredDoctors.map((doctor) => (
+            {/* Doctor list */}
+            <div className="flex flex-col space-y-2 mb-8">
+              {doctors.map((doctor) => (
                 <DoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
             
             {/* No results message */}
-            {filteredDoctors.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <div className="bg-gray-50 rounded-xl p-8 max-w-lg mx-auto">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Tidak Ada Hasil
-                  </h3>
-                  <p className="text-gray-600">
-                    Tidak ada dokter yang sesuai dengan pencarian Anda
-                  </p>
-                </div>
+            {doctors.length === 0 && !loading && (
+              <div className="text-center py-8">
+                <p className="text-gray-600">
+                  Tidak ada dokter yang tersedia
+                </p>
               </div>
             )}
           </>
         )}
       </main>
 
-      <footer className="max-w-7xl mx-auto mt-12 text-center">
+      <footer className="max-w-7xl mx-auto mt-8 text-center">
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="refresh-button"
+          className="refresh-button-simple"
         >
-          <svg
-            className={`w-5 h-5 transition-transform duration-500 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 2v6h-6" />
-            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-            <path d="M3 22v-6h6" />
-            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-          </svg>
-          <span className="relative">
-            {isRefreshing ? 'Memperbarui...' : 'Perbarui Data'}
-          </span>
-          {!isRefreshing && (
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/25 to-white/0 
-                          -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          )}
+          {isRefreshing ? 'Memperbarui...' : 'Perbarui Data'}
         </button>
       </footer>
     </div>
