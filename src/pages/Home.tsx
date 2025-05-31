@@ -1,7 +1,12 @@
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  
   const features = [
     {
       id: 2,
@@ -15,18 +20,18 @@ const Home = () => {
     {
       id: 3,
       image: "/feature-3.png",
-      title: "Om Curhat",
-      description: "Konsultasi kesehatan online",
-      link: "/om-curhat",
+      title: "Om Edukasi",
+      description: "Edukasi kesehatan terpercaya",
+      link: "/om-edukasi",
       position: { x: 500, y: 150 },
       size: { width: 280, height: 280 }
     },
     {
       id: 4,
       image: "/feature-4.png",
-      title: "Om Edukasi",
-      description: "Edukasi kesehatan terpercaya",
-      link: "/om-edukasi",
+      title: "Om Curhat",
+      description: "Konsultasi kesehatan online",
+      link: "/om-curhat",
       position: { x: 800, y: 150 },
       size: { width: 280, height: 280 }
     },
@@ -55,6 +60,28 @@ const Home = () => {
     document.title = "Om SEHAT - Sistem Kesehatan Integrasi #1 di Indonesia";
   }, []);
 
+  // Handle feature click
+  const handleFeatureClick = (feature: typeof features[0], e: React.MouseEvent) => {
+    // Check if it's OmEdukasi or OmPantau
+    if (feature.title === "Om Edukasi" || feature.title === "Om Pantau") {
+      e.preventDefault();
+      setSelectedFeature(feature.title);
+      setShowModal(true);
+    }
+    // For other features, the Link component will handle navigation
+  };
+
+  // Handle confirmation
+  const handleConfirm = () => {
+    if (selectedFeature) {
+      const feature = features.find(f => f.title === selectedFeature);
+      if (feature) {
+        navigate(feature.link);
+      }
+    }
+    setShowModal(false);
+  };
+
   return (
     <main className="page-container">
       {/* Hero Section */}
@@ -78,6 +105,7 @@ const Home = () => {
               key={feature.id}
               to={feature.link}
               className="feature-item"
+              onClick={(e) => handleFeatureClick(feature, e)}
               style={{
                 left: `${Math.max(0, feature.position.x)}px`,
                 top: `${feature.position.y}px`,
@@ -111,6 +139,7 @@ const Home = () => {
               key={feature.id}
               to={feature.link}
               className="feature-link"
+              onClick={(e) => handleFeatureClick(feature, e)}
               aria-label={`${feature.title} - ${feature.description}`}
             >
               <div className="feature-mobile-container">
@@ -144,6 +173,17 @@ const Home = () => {
           </Link>
         </div>
       </div>
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showModal}
+        title={`${selectedFeature} - Konfirmasi Akses`}
+        message={`${selectedFeature} hanya tersedia untuk pengguna instansi/bisnis. Apakah Anda ingin melanjutkan?`}
+        confirmLabel="Lanjutkan"
+        cancelLabel="Kembali"
+        onConfirm={handleConfirm}
+        onCancel={() => setShowModal(false)}
+      />
     </main>
   );
 };
