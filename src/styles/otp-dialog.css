@@ -9,8 +9,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999999; /* Extremely high z-index to ensure it's above everything */
   animation: fadeIn 0.2s ease-out;
+  isolation: isolate; /* Create a new stacking context */
 }
 
 .otp-dialog-container {

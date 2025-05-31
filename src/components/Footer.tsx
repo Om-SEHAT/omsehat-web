@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="footer-main" role="contentinfo" aria-label="Site footer">
+    <footer className="footer-main" role="contentinfo" aria-label="Site footer" style={{ zIndex: 1 }}>
       <div className="footer-container">
         <div className="footer-content">
           {/* Logo and Description */}

@@ -3,10 +3,14 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative; /* Create a positioning context */
+  z-index: 0; /* Base z-index */
 }
 
 .main-content {
   flex: 1;
+  position: relative; /* Create a new stacking context */
+  z-index: 2; /* Higher than footer */
 }
 
 /* Button Styles */
@@ -1099,6 +1103,8 @@
   background-color: #E9ECEF;
   border-top: 1px solid #DEE2E6;
   margin-top: auto; /* Ensures footer stays at the bottom */
+  position: relative;
+  z-index: 1; /* Set a low z-index to ensure modals can appear above it */
 }
 
 .footer-container {
@@ -1241,6 +1247,7 @@
   align-items: center;
   position: relative;
   padding-left: 0;
+  z-index: 1; /* Ensure links have a low z-index */
 }
 
 .footer-link:hover {
@@ -1561,7 +1568,7 @@
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 99999; /* Significantly increased z-index to ensure overlay appears above all other elements */
   display: flex;
   align-items: flex-start;
   justify-content: center;

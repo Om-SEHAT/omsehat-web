@@ -40,9 +40,14 @@ const Header = () => {
               />
             </div>
 
-            <button className="btn btn-primary help-btn">
+            <a 
+              href="https://api.whatsapp.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="btn btn-primary help-btn"
+            >
               Bantuan
-            </button>
+            </a>
           </div>
         </div>
       </header>

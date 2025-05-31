@@ -12,6 +12,10 @@ import OmSapa from '@/pages/OmSapa'
 import OmPantau from '@/pages/OmPantau'
 import NotFound from '@/pages/NotFound'
 import { useNotifications } from './hooks/useNotifications'
+import './styles/z-index-fix.css'
+import './styles/animations.css'
+import './styles/patterns.css'
+import './styles/doctor-modal.css'
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -41,11 +45,14 @@ function App() {
       </main>
       <Footer />
       <ScrollToTop />
+      {/* Notification container is placed at the end of the DOM to ensure it's on top */}
       <NotificationContainer 
         notifications={notifications} 
         onDismiss={dismissNotification} 
         position="top-right"
       />
+      {/* Add a modal portal div to ensure modals appear above everything */}
+      <div id="modal-portal" style={{ position: 'fixed', zIndex: 9999999 }}></div>
     </div>
   )
 }
