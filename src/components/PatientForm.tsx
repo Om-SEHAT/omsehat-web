@@ -1,7 +1,8 @@
-import { useState, FormEvent, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFocusTrap from '../hooks/useFocusTrap';
-import { countries, regions, getCountryFlag, filterCountries } from '../utils/countries';
+import { countries, regions, getCountryFlag } from '../utils/countries';
 import OTPDialog from './OTPDialog';
 
 export interface PatientFormData {
@@ -37,28 +38,18 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
 
   const [errors, setErrors] = useState<Partial<PatientFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [countrySearch, setCountrySearch] = useState('');
-  const [filteredCountriesList, setFilteredCountriesList] = useState(countries);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
   
   // OTP related states
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [isOtpLoading, setIsOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
-  const [registrationData, setRegistrationData] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [registrationData, setRegistrationData] = useState<unknown>(null);
   
   // Navigation hook for redirecting after successful verification
   const navigate = useNavigate();
   
-  // Filter countries when search term changes
-  useEffect(() => {
-    if (countrySearch.trim() === '') {
-      setFilteredCountriesList(countries);
-    } else {
-      setFilteredCountriesList(filterCountries(countrySearch));
-    }
-  }, [countrySearch]);
+  // Filter countries removed as it's not being used
 
   const resetForm = () => {
     setFormData({
@@ -73,7 +64,7 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
       sex: '',
     });
     setErrors({});
-    setCountrySearch('');
+    setApiError(null);
     setApiError(null);
   };
 
@@ -145,11 +136,6 @@ const PatientForm = ({ onSubmit, initialData = {}, onCancel }: PatientFormProps)
       ...formData,
       [name]: value
     });
-  };
-  
-  // Handle country search input
-  const handleCountrySearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCountrySearch(e.target.value);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
